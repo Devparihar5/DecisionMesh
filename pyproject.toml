@@ -1,0 +1,19 @@
+[tool.poetry]
+name = "decisionmesh"
+version = "0.1.0"
+description = "Local multi-agent decision intelligence MVP powered by Agno and OpenAI-compatible model servers"
+authors = ["Project contributors"]
+package-mode = false
+
+[tool.poetry.dependencies]
+python = ">=3.12,<3.13"
+agno = ">=3.1.12,<4.0"
+openai = ">=3.46.0,<4.0"
+fastapi = ">=0.115,<1.0"
+uvicorn = { version = ">=0.34,<1.0", extras = ["standard"] }
+httpx = ">=0.28,<1.0"
+python-dotenv = ">=1.0,<2.0"
+
+[build-system]
+requires = ["poetry-core>=2.0.0,<3.0.0"]
+build-backend = "poetry.core.masonry.api"

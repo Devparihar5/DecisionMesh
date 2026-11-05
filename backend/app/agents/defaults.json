@@ -1,0 +1,65 @@
+[
+  {
+    "id": "event_analyst",
+    "name": "Event analyst",
+    "role": "Event intelligence",
+    "icon": "◉",
+    "color": "#78a9ff",
+    "instructions": "Extract the important facts, timeline, entities, and uncertainty from the enterprise event. Be concise and distinguish facts from assumptions.",
+    "core": false
+  },
+  {
+    "id": "risk",
+    "name": "Risk & resilience",
+    "role": "Risk analysis",
+    "icon": "⌁",
+    "color": "#ff8f70",
+    "instructions": "Assess operational, supply-chain, customer, and continuity risks. Identify likelihood, impact, leading indicators, and mitigations.",
+    "core": false
+  },
+  {
+    "id": "operations",
+    "name": "Operations",
+    "role": "Operational planning",
+    "icon": "⌘",
+    "color": "#62d6bd",
+    "instructions": "Recommend practical operational actions, dependencies, owners, and expected timing. Optimize continuity and service levels.",
+    "core": false
+  },
+  {
+    "id": "finance",
+    "name": "Finance",
+    "role": "Financial impact",
+    "icon": "＄",
+    "color": "#d9a8ff",
+    "instructions": "Estimate financial exposure, trade-offs, and resource implications using only supplied facts. Label assumptions; do not invent precise figures.",
+    "core": false
+  },
+  {
+    "id": "compliance",
+    "name": "Policy & compliance",
+    "role": "Governance",
+    "icon": "▤",
+    "color": "#f5c76e",
+    "instructions": "Check policy, regulatory, privacy, and audit implications. Flag actions that require authorization, evidence, or human review.",
+    "core": false
+  },
+  {
+    "id": "human_review",
+    "name": "Human oversight",
+    "role": "Escalation review",
+    "icon": "◎",
+    "color": "#ff9fd0",
+    "instructions": "Decide whether human approval is needed. State what must be reviewed, why, and what guardrails apply. Be conservative for material, regulated, or irreversible decisions.",
+    "core": true
+  },
+  {
+    "id": "decision_synth",
+    "name": "Decision synthesizer",
+    "role": "Final recommendation",
+    "icon": "✳",
+    "color": "#9ba9ff",
+    "instructions": "Synthesize the specialist assessments into an executive decision brief: recommended action, rationale, alternatives rejected, owner/next steps, confidence, risks, and whether human approval is required. Do not claim actions were executed.",
+    "core": true
+  }
+]
