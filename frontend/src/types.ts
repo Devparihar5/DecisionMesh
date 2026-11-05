@@ -27,7 +27,7 @@ export interface RunInput {
   require_approval: boolean;
 }
 
-export type EventType = 'start' | 'agent_start' | 'agent_done' | 'agent_error' | 'complete' | 'error';
+export type EventType = 'start' | 'agent_start' | 'agent_done' | 'agent_error' | 'complete' | 'error' | 'review_required' | 'review_submitted';
 
 /** Version 1 matches backend/app/orchestration/events.py. */
 export interface RunEvent {
@@ -46,12 +46,16 @@ export interface RunEvent {
   elapsed_ms?: number;
   human_approval_required?: boolean;
   degraded: boolean;
+  human_reviewed?: boolean;
+  review_action?: 'finalize' | 'rerun';
+  feedback?: string;
+  parent_run_id?: string;
 }
 
-export type AgentStatus = 'queued' | 'working' | 'complete' | 'error' | 'skipped' | 'cancelled';
-export type RunStatus = 'idle' | 'running' | 'complete' | 'failed' | 'cancelled';
+export type AgentStatus = 'queued' | 'working' | 'complete' | 'error' | 'skipped' | 'cancelled' | 'awaiting_review';
+export type RunStatus = 'idle' | 'running' | 'complete' | 'failed' | 'cancelled' | 'awaiting_review';
 
-export type StoredRunStatus = 'running' | 'complete' | 'failed' | 'cancelled' | 'interrupted';
+export type StoredRunStatus = 'running' | 'complete' | 'failed' | 'cancelled' | 'interrupted' | 'awaiting_review' | 'revised';
 export type ExecutionStatus = 'queued' | 'running' | 'complete' | 'failed' | 'cancelled' | 'skipped' | 'interrupted';
 
 export interface RunSummary {
@@ -66,6 +70,7 @@ export interface RunSummary {
   degraded: boolean;
   error: string | null;
   agent_count: number;
+  parent_run_id: string | null;
 }
 
 export interface ExecutionRecord {
@@ -82,6 +87,10 @@ export interface ExecutionRecord {
 }
 
 export interface RunDetail extends RunSummary {
+  input_feedback: string;
+  review_feedback: string | null;
+  review_action: 'finalize' | 'rerun' | null;
+  reviewed_at: string | null;
   agents: AgentDefinition[];
   executions: ExecutionRecord[];
   events: RunEvent[];
@@ -130,8 +139,12 @@ export interface AnalyticsReport {
   cancelled_runs: number;
   interrupted_runs: number;
   running_runs: number;
+  awaiting_review_runs: number;
+  revised_runs: number;
   completion_rate: number | null;
   average_duration_ms: number | null;
   agents: AgentPerformance[];
   daily: DailyRuns[];
 }
+
+export interface ReviewInput { action: 'finalize' | 'rerun'; feedback: string }

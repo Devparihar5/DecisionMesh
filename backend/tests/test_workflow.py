@@ -17,7 +17,7 @@ from backend.app.agents.factory import AgnoRunner
 from backend.app.core.config import Settings
 from backend.app.core.errors import ApplicationError
 from backend.app.main import create_app
-from backend.app.orchestration.coordinator import Coordinator
+from backend.app.orchestration.coordinator import Coordinator, EventSequence
 from backend.app.schemas.agents import AgentInput
 from backend.app.schemas.runs import RunInput
 from backend.app.services.models import ModelService
@@ -62,17 +62,26 @@ class WorkflowTests(unittest.IsolatedAsyncioTestCase):
     async def events(self, runner, ids=('finance',), approval=True):
         catalog = AgentRegistry()
         request = RunInput(scenario='A supplier outage delays an order.', selected_agents=list(ids), require_approval=approval)
-        return [event async for event in Coordinator(runner).events(
+        coordinator = Coordinator(runner)
+        events = [event async for event in coordinator.events(
             request, 'local-model', catalog.specialists(list(ids)),
             catalog.get('human_review'), catalog.get('decision_synth'),
         )]
+        if events[-1].type == 'review_required':
+            findings = [(event.name, event.content) for event in events if event.type == 'agent_done']
+            failed = [event.name for event in events if event.type == 'agent_error']
+            sequence = EventSequence(events[-1].run_id, events[-1].sequence)
+            events.extend([event async for event in coordinator.synthesize(
+                request, 'local-model', catalog.get('decision_synth'), findings, failed, sequence,
+            )])
+        return events
 
     async def test_review_is_in_synthesis_and_events_ordered(self):
         runner = FakeRunner()
         events = await self.events(runner)
         self.assertIn('Finding from Human oversight', runner.prompts['decision_synth'])
         self.assertEqual(events[-1].type, 'complete')
-        self.assertTrue(events[-1].human_approval_required)
+        self.assertTrue(events[-1].human_reviewed)
         self.assertEqual([e.sequence for e in events], list(range(1, len(events) + 1)))
         self.assertEqual(len({e.run_id for e in events}), 1)
         self.assertTrue(events[0].sse().endswith('\n\n'))
@@ -157,7 +166,11 @@ class RouteTests(unittest.TestCase):
             response = client.post('/api/run', json={'scenario': 'Supplier outage delays a delivery.', 'selected_agents': ['finance']})
             self.assertEqual(response.status_code, 200)
             self.assertIn('text/event-stream', response.headers['content-type'])
-            self.assertIn('event: complete', response.text)
+            self.assertIn('event: review_required', response.text)
+            self.assertNotIn('event: complete', response.text)
+            saved = client.get('/api/runs').json()['items'][0]
+            finalized = client.post(f"/api/runs/{saved['id']}/review", json={'action': 'finalize', 'feedback': 'Prioritize continuity.'})
+            self.assertIn('event: complete', finalized.text)
             self.assertIn('Finding from Human oversight', response.text)
             self.assertEqual(client.post('/api/run', json={'scenario': 'Supplier outage', 'selected_agents': []}).status_code, 422)
 

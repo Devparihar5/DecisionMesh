@@ -1,4 +1,4 @@
-import type { AgentDefinition, AgentInput, HealthStatus, RunInput } from '../types';
+import type { AgentDefinition, AgentInput, HealthStatus, RunInput, ReviewInput } from '../types';
 
 async function checked(response: Response): Promise<Response> {
   if (response.ok) return response;
@@ -30,6 +30,10 @@ export const api = {
   createAgent: (value: AgentInput) => json<AgentDefinition>('/api/agents', { method: 'POST', ...body(value) }),
   updateAgent: (id: string, value: AgentInput) => json<AgentDefinition>(`/api/agents/${encodeURIComponent(id)}`, { method: 'PUT', ...body(value) }),
   deleteAgent: async (id: string) => { await checked(await fetch(`/api/agents/${encodeURIComponent(id)}`, { method: 'DELETE' })); },
+  review: async (id: string, value: ReviewInput, signal: AbortSignal) => checked(await fetch(`/api/runs/${encodeURIComponent(id)}/review`, {
+    method: 'POST', ...body(value), signal,
+  })),
+  cancelReview: async (id: string) => { await checked(await fetch(`/api/runs/${encodeURIComponent(id)}/cancel`, { method: 'POST' })); },
   run: async (value: RunInput, signal: AbortSignal) => checked(await fetch('/api/run', {
     method: 'POST', ...body(value), signal,
   })),

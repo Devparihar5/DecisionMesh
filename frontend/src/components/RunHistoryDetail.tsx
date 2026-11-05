@@ -14,12 +14,16 @@ export function RunHistoryDetail({ id }: { id: string }) {
   return <div className="history-detail">
     <Panel index="RUN" title="Saved decision context" action={<button className="text-button" onClick={refresh}>↻ Refresh</button>}>
       <div className="saved-run-heading"><StatusBadge status={run.status} partial={run.degraded} /><code>{run.id.slice(0, 12)}</code></div>
+      {run.status === 'awaiting_review' && <p className="review-waiting"><span>This run is waiting for your suggestions.</span><a className="secondary-button" href={`#/?review=${run.id}`}>Review & continue →</a></p>}
+      {run.parent_run_id && <p className="flow-note">Revision of run <code>{run.parent_run_id.slice(0, 12)}</code></p>}
+      {run.input_feedback && <p className="saved-feedback"><strong>Suggestions used for this analysis</strong>{run.input_feedback}</p>}
+      {run.review_action && <p className="saved-feedback"><strong>Operator choice: {run.review_action === 'rerun' ? 'Revise and rerun' : 'Generate final brief'}</strong>{run.review_feedback || 'No additional suggestions supplied.'}</p>}
       <p className="saved-scenario">{run.scenario}</p>
       <dl className="run-metadata">
         <div><dt>Started</dt><dd>{dateTime(run.created_at)}</dd></div>
         <div><dt>Duration</dt><dd>{duration(run.duration_ms)}</dd></div>
         <div><dt>Model</dt><dd>{run.model || 'Unavailable'}</dd></div>
-        <div><dt>Review preference</dt><dd>{run.require_approval ? 'Human review required' : 'Not required by operator'}</dd></div>
+        <div><dt>Review preference</dt><dd>{run.review_action ? 'Review submitted' : run.require_approval ? 'Human review required' : 'Not required by operator'}</dd></div>
       </dl>
       {run.error && <p className="inline-error">{run.error}</p>}
       <p className="flow-note">Saved agent definitions and findings reflect this run, even if a role is later changed or removed.</p>

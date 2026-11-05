@@ -25,7 +25,7 @@ export function HistoryPage() {
       <button className="secondary-button" onClick={refresh} disabled={loading}>↻ Refresh history</button>
     </section>
     <div className="history-controls"><div><label htmlFor="history-search" className="field-label">SEARCH SCENARIOS OR RUN IDS</label><input id="history-search" type="search" maxLength={200} value={draft} placeholder="Find a previous decision…" onChange={(event) => { setDraft(event.target.value); setSelected(null); }} /></div>
-      <div><label htmlFor="history-status" className="field-label">OUTCOME</label><select id="history-status" value={status} onChange={(event) => { setStatus(event.target.value as StoredRunStatus | ''); setOffset(0); setSelected(null); }}><option value="">All outcomes</option>{['running', 'complete', 'failed', 'cancelled', 'interrupted'].map((value) => <option value={value} key={value}>{value}</option>)}</select></div>
+      <div><label htmlFor="history-status" className="field-label">OUTCOME</label><select id="history-status" value={status} onChange={(event) => { setStatus(event.target.value as StoredRunStatus | ''); setOffset(0); setSelected(null); }}><option value="">All outcomes</option>{['awaiting_review', 'running', 'complete', 'revised', 'failed', 'cancelled', 'interrupted'].map((value) => <option value={value} key={value}>{value.replaceAll('_', ' ')}</option>)}</select></div>
     </div>
     {error && <div className="page-error" role="alert">{error}<button className="text-button" onClick={refresh}>Retry</button></div>}
     {loading && <p className="memory-loading" role="status">Reading local run history…</p>}

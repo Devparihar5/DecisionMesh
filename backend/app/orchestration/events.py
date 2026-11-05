@@ -4,7 +4,7 @@ from typing import Literal
 
 from pydantic import BaseModel
 
-EventType = Literal["start", "agent_start", "agent_done", "agent_error", "complete", "error"]
+EventType = Literal["start", "agent_start", "agent_done", "agent_error", "complete", "error", "review_required", "review_submitted"]
 
 
 class RunEvent(BaseModel):
@@ -23,6 +23,10 @@ class RunEvent(BaseModel):
     elapsed_ms: int | None = None
     human_approval_required: bool | None = None
     degraded: bool = False
+    human_reviewed: bool = False
+    review_action: str | None = None
+    feedback: str | None = None
+    parent_run_id: str | None = None
 
     def sse(self) -> str:
         return f"id: {self.sequence}\nevent: {self.type}\ndata: {self.model_dump_json(exclude_none=True)}\n\n"

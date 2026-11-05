@@ -14,7 +14,9 @@ export function RunFindings({ events, status, error }: Props) {
       <p className={`finding-body ${event.type === 'agent_error' ? 'finding-error' : ''}`}>{event.content || event.message}</p>
     </details>)}
     {complete?.degraded && <p className="approval-banner">Partial results · Some agents failed. Review missing perspectives before making a decision.</p>}
+    {complete?.human_reviewed && <p className="approval-banner">Your review was recorded and your suggestions were supplied to the final brief.</p>}
     {complete?.human_approval_required && <p className="approval-banner">Human review required · This recommendation awaits a decision owner’s review.</p>}
+    {status === 'awaiting_review' && <p className="approval-banner">Analysis is saved. The final brief will run after you submit your review.</p>}
     {status === 'cancelled' && <p className="approval-banner">Workflow stopped. Completed findings are preserved; no final decision was approved.</p>}
   </Panel>;
 }

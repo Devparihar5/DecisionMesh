@@ -32,7 +32,7 @@ export function OrchestrationGraph({ agents, selected, statuses, approval, runSt
     </g>;
   };
   return (
-    <Panel index="03" title="Live orchestration" className="orchestration-panel" action={<div className={`live-indicator ${active ? 'running' : ''}`}><i />{runStatus === 'idle' ? 'STANDING BY' : runStatus.toUpperCase()}</div>}>
+    <Panel index="03" title="Live orchestration" className="orchestration-panel" action={<div className={`live-indicator ${active ? 'running' : ''}`}><i />{runStatus === 'idle' ? 'STANDING BY' : runStatus.replaceAll('_', ' ').toUpperCase()}</div>}>
       <div className="flow-wrap"><svg viewBox={`0 0 840 ${height}`} role="img" aria-label="Selected specialists share scenario context; their findings feed oversight and final synthesis">
         <defs><linearGradient id="flow-gradient"><stop stopColor="#78a9ff" /><stop offset="1" stopColor="#62d6bd" /></linearGradient></defs>
         {specialists.map((agent, index) => <g key={`edge-${agent.id}`}>

@@ -3,11 +3,13 @@ import asyncio
 from contextlib import suppress
 from typing import Annotated
 
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Response
 from fastapi.responses import StreamingResponse
 
-from backend.app.api.dependencies import run_service
+from backend.app.api.dependencies import history, run_service
 from backend.app.schemas.runs import RunInput
+from backend.app.schemas.reviews import ReviewInput
+from backend.app.storage.runs import RunRepository
 from backend.app.services.runs import RunService
 
 router = APIRouter(tags=["runs"])
@@ -46,3 +48,16 @@ async def run(
         stream_events(events), media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@router.post('/api/runs/{run_id}/review')
+async def submit_review(run_id: str, body: ReviewInput, service: Annotated[RunService, Depends(run_service)]):
+    events = await service.review(run_id, body)
+    return StreamingResponse(stream_events(events), media_type='text/event-stream',
+                             headers={'Cache-Control': 'no-cache', 'X-Accel-Buffering': 'no'})
+
+
+@router.post('/api/runs/{run_id}/cancel', status_code=204)
+def cancel_review(run_id: str, repository: Annotated[RunRepository, Depends(history)]):
+    repository.cancel_review(run_id)
+    return Response(status_code=204)

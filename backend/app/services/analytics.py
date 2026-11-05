@@ -27,7 +27,7 @@ class AnalyticsService:
             # visible from immutable historical execution snapshots.
             definitions = [row['definition'] for row in connection.execute('SELECT definition FROM agents')]
         counts = Counter(run['status'] for run in runs)
-        finished = len(runs) - counts['running']
+        finished = sum(counts[status] for status in ['complete', 'failed', 'cancelled', 'interrupted'])
         completed_durations = [run['duration_ms'] for run in runs if run['status'] == 'complete' and run['duration_ms'] is not None]
         grouped = defaultdict(list)
         for execution in executions:
@@ -52,6 +52,7 @@ class AnalyticsService:
         return AnalyticsReport(period_days=days, total_runs=len(runs), completed_runs=counts['complete'],
             partial_runs=sum(bool(run['degraded']) for run in runs if run['status'] == 'complete'),
             failed_runs=counts['failed'], cancelled_runs=counts['cancelled'], interrupted_runs=counts['interrupted'],
+            awaiting_review_runs=counts['awaiting_review'], revised_runs=counts['revised'],
             running_runs=counts['running'], completion_rate=round(counts['complete'] / finished * 100, 1) if finished else None,
             average_duration_ms=average(completed_durations),
             agents=sorted(metrics.values(), key=lambda item: (-item.attempts, item.name)), daily=daily)

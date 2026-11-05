@@ -37,6 +37,8 @@ class AnalyticsReport(BaseModel):
     failed_runs: int
     cancelled_runs: int
     interrupted_runs: int
+    awaiting_review_runs: int = 0
+    revised_runs: int = 0
     running_runs: int
     completion_rate: float | None
     average_duration_ms: int | None

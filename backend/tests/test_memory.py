@@ -40,7 +40,7 @@ class MemoryTests(unittest.IsolatedAsyncioTestCase):
         self.catalog = AgentRegistry(AgentRepository(self.database))
         self.history = RunRepository(self.database)
         self.analytics = AnalyticsService(self.database)
-        self.request = RunInput(scenario='A supplier outage affects delivery.', selected_agents=['finance'])
+        self.request = RunInput(scenario='A supplier outage affects delivery.', selected_agents=['finance'], require_approval=False)
 
     def service(self, runner=None, models=None):
         return RunService(self.catalog, models or LocalModels(), Coordinator(runner or LocalRunner()), self.history)
@@ -186,7 +186,7 @@ class MemoryApiTests(unittest.TestCase):
             with TestClient(create_app(settings)) as client:
                 client.app.state.models = LocalModels()
                 client.app.state.coordinator = Coordinator(LocalRunner())
-                response = client.post('/api/run', json={'scenario': 'Supplier outage delays delivery.', 'selected_agents': ['finance']})
+                response = client.post('/api/run', json={'scenario': 'Supplier outage delays delivery.', 'selected_agents': ['finance'], 'require_approval': False})
                 self.assertEqual(response.status_code, 200)
                 saved = client.get('/api/runs').json()
                 self.assertEqual(saved['total'], 1)
@@ -209,7 +209,7 @@ class DatabaseNamingTests(unittest.TestCase):
             legacy_path = Path(directory) / 'orchestrate.sqlite3'
             legacy = Database(legacy_path)
             registry = AgentRegistry(AgentRepository(legacy))
-            request = RunInput(scenario='A historical supplier delivery risk.', selected_agents=['finance'])
+            request = RunInput(scenario='A historical supplier delivery risk.', selected_agents=['finance'], require_approval=False)
             old_history = RunRepository(legacy)
             run_id = old_history.create(request, registry.specialists(['finance']))
             old_history.finish(run_id, 'failed', 'Historical run')

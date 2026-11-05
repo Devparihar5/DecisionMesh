@@ -17,11 +17,12 @@ export function AnalyticsPage() {
     {loading && <p className="memory-loading" role="status">Analyzing saved runs…</p>}
     {error && <div className="page-error" role="alert">{error}<button className="text-button" onClick={refresh}>Retry</button></div>}
     {data && <>
-      <div className="metric-grid"><MetricCard label="TOTAL RUNS" value={String(data.total_runs)} note={`${data.running_runs} currently running`} /><MetricCard label="COMPLETION RATE" value={percent(data.completion_rate)} note={`${data.completed_runs} completed · ${data.partial_runs} partial`} accent /><MetricCard label="AVG WORKFLOW TIME" value={duration(data.average_duration_ms)} note="Completed workflows only" /><MetricCard label="FAILED RUNS" value={String(data.failed_runs)} note={`${data.cancelled_runs} cancelled · ${data.interrupted_runs} interrupted`} /></div>
+      <div className="metric-grid"><MetricCard label="TOTAL RUNS" value={String(data.total_runs)} note={`${data.running_runs} running · ${data.awaiting_review_runs} awaiting review`} /><MetricCard label="COMPLETION RATE" value={percent(data.completion_rate)} note={`${data.completed_runs} completed · ${data.partial_runs} partial`} accent /><MetricCard label="AVG WORKFLOW TIME" value={duration(data.average_duration_ms)} note="Completed workflows only" /><MetricCard label="FAILED RUNS" value={String(data.failed_runs)} note={`${data.cancelled_runs} cancelled · ${data.interrupted_runs} interrupted`} /></div>
       {!data.total_runs && <div className="notice">No saved runs in this period yet. <a href="#/">Start a workflow</a> to build your analytics.</div>}
+      <p className="flow-note">{data.revised_runs} workflows revised and rerun · {data.awaiting_review_runs} waiting for an operator decision</p>
       <RunActivityChart days={data.daily} />
       <AgentPerformanceTable agents={data.agents} />
-      <p className="analytics-method">Metrics reflect observed execution, not decision accuracy. Completion rate includes partial workflows and excludes currently running runs from its denominator. Periods and daily buckets use UTC. {days === 0 ? 'All-time totals are shown; the chart covers the last 90 days.' : `Showing ${days} calendar days, including today.`}</p>
+      <p className="analytics-method">Metrics reflect observed execution, not decision accuracy. Completion rate includes partial workflows and excludes running, awaiting-review, and superseded revision runs from its denominator. Workflow durations include time spent waiting for review. Periods and daily buckets use UTC. {days === 0 ? 'All-time totals are shown; the chart covers the last 90 days.' : `Showing ${days} calendar days, including today.`}</p>
     </>}
   </main>;
 }

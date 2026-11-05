@@ -6,7 +6,7 @@ from pydantic import BaseModel
 from backend.app.orchestration.events import RunEvent
 from backend.app.schemas.agents import AgentDefinition
 
-StoredRunStatus = Literal['running', 'complete', 'failed', 'cancelled', 'interrupted']
+StoredRunStatus = Literal['running', 'complete', 'failed', 'cancelled', 'interrupted', 'awaiting_review', 'revised']
 ExecutionStatus = Literal['queued', 'running', 'complete', 'failed', 'cancelled', 'skipped', 'interrupted']
 
 
@@ -22,6 +22,7 @@ class RunSummary(BaseModel):
     degraded: bool
     error: str | None
     agent_count: int
+    parent_run_id: str | None = None
 
 
 class ExecutionRecord(BaseModel):
@@ -38,6 +39,10 @@ class ExecutionRecord(BaseModel):
 
 
 class RunDetail(RunSummary):
+    input_feedback: str = ""
+    review_feedback: str | None = None
+    review_action: str | None = None
+    reviewed_at: str | None = None
     agents: list[AgentDefinition]
     executions: list[ExecutionRecord]
     events: list[RunEvent]
