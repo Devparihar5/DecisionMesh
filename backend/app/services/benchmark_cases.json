@@ -1,0 +1,8 @@
+[
+  {"id":"supplier-outage","name":"Supplier outage","state":{"inventory":40,"demand":140,"capacity":60,"backup_capacity":60,"unit_cost":5,"backup_unit_cost":15,"budget":1500}},
+  {"id":"tight-budget","name":"Demand surge with tight budget","state":{"inventory":10,"demand":200,"capacity":120,"backup_capacity":100,"unit_cost":5,"backup_unit_cost":18,"budget":700}},
+  {"id":"inventory-buffer","name":"Existing stock covers demand","state":{"inventory":180,"demand":100,"capacity":80,"backup_capacity":60,"unit_cost":5,"backup_unit_cost":12,"budget":1000}},
+  {"id":"cost-conflict","name":"Service versus premium cost","state":{"inventory":20,"demand":100,"capacity":65,"backup_capacity":40,"unit_cost":8,"backup_unit_cost":30,"budget":650}},
+  {"id":"production-stop","name":"Production halted","state":{"inventory":15,"demand":90,"capacity":0,"backup_capacity":80,"unit_cost":6,"backup_unit_cost":12,"budget":1100}},
+  {"id":"budget-exhausted","name":"No remaining spend authority","state":{"inventory":12,"demand":80,"capacity":70,"backup_capacity":50,"unit_cost":5,"backup_unit_cost":15,"budget":0}}
+]

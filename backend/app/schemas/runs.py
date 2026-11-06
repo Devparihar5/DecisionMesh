@@ -9,3 +9,4 @@ class RunInput(BaseModel):
     model: str = Field(default="", max_length=200)
     selected_agents: list[str] = Field(min_length=1, max_length=32)
     require_approval: bool = True
+    decision_case_id: str | None = Field(default=None, max_length=100)

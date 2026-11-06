@@ -27,6 +27,7 @@ class RunEvent(BaseModel):
     review_action: str | None = None
     feedback: str | None = None
     parent_run_id: str | None = None
+    decision_case_id: str | None = None
 
     def sse(self) -> str:
         return f"id: {self.sequence}\nevent: {self.type}\ndata: {self.model_dump_json(exclude_none=True)}\n\n"

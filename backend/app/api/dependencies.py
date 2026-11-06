@@ -30,4 +30,4 @@ def analytics(request: Request) -> AnalyticsService:
 
 
 def run_service(request: Request) -> RunService:
-    return RunService(registry(request), models(request), coordinator(request), history(request))
+    return RunService(registry(request), models(request), coordinator(request), history(request), request.app.state.enterprise)

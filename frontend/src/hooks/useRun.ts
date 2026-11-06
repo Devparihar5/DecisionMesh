@@ -72,6 +72,8 @@ export function useRun() {
     return execute((signal) => api.review(target.run_id, input, signal), false, seed);
   }, [execute, review]);
   const restoreReview = useCallback((checkpoint: RunEvent, savedEvents: RunEvent[]) => {
+    baseElapsed.current = checkpoint.elapsed_ms || 0;
+    setElapsedMs(baseElapsed.current); setError('');
     setEvents(savedEvents); setReview(checkpoint); setStatus('awaiting_review');
   }, []);
   const cancel = useCallback(async () => {

@@ -25,6 +25,7 @@ export interface RunInput {
   model: string;
   selected_agents: string[];
   require_approval: boolean;
+  decision_case_id?: string;
 }
 
 export type EventType = 'start' | 'agent_start' | 'agent_done' | 'agent_error' | 'complete' | 'error' | 'review_required' | 'review_submitted';
@@ -50,6 +51,7 @@ export interface RunEvent {
   review_action?: 'finalize' | 'rerun';
   feedback?: string;
   parent_run_id?: string;
+  decision_case_id?: string;
 }
 
 export type AgentStatus = 'queued' | 'working' | 'complete' | 'error' | 'skipped' | 'cancelled' | 'awaiting_review';

@@ -48,7 +48,8 @@ class Coordinator:
         failed: list[str] = []
         started = time.monotonic()
         analysis = [*specialists, *([oversight] if request.require_approval else [])]
-        yield sequence.emit('start', model=model, agents=[agent.id for agent in [*analysis, synthesizer]], parent_run_id=parent_run_id)
+        yield sequence.emit('start', model=model, agents=[agent.id for agent in [*analysis, synthesizer]], parent_run_id=parent_run_id,
+                            decision_case_id=request.decision_case_id)
         for config in analysis:
             if config.core and not findings:
                 yield sequence.emit('error', message='No specialist returned a finding. Check the local model.')

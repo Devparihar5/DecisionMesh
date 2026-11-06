@@ -6,6 +6,8 @@ from contextlib import contextmanager
 from pathlib import Path
 from typing import Iterator
 
+from backend.app.storage.enterprise_schema import ENTERPRISE_SCHEMA
+
 SCHEMA = """
 CREATE TABLE IF NOT EXISTS metadata (key TEXT PRIMARY KEY, value TEXT NOT NULL);
 CREATE TABLE IF NOT EXISTS agents (id TEXT PRIMARY KEY, definition TEXT NOT NULL);
@@ -55,16 +57,19 @@ class Database:
         with self.connection() as connection:
             connection.execute('PRAGMA journal_mode=WAL')
             version = connection.execute('PRAGMA user_version').fetchone()[0]
-            if version > 2:
+            if version > 3:
                 raise RuntimeError('Local memory database was created by a newer application version.')
-            connection.executescript(SCHEMA)
-            if version < 2:
-                connection.execute('ALTER TABLE runs ADD COLUMN parent_run_id TEXT REFERENCES runs(id)')
-                connection.execute("ALTER TABLE runs ADD COLUMN input_feedback TEXT NOT NULL DEFAULT ''")
-                connection.execute('ALTER TABLE runs ADD COLUMN review_feedback TEXT')
-                connection.execute('ALTER TABLE runs ADD COLUMN review_action TEXT')
-                connection.execute('ALTER TABLE runs ADD COLUMN reviewed_at TEXT')
-            connection.execute('PRAGMA user_version=2')
+            legacy_review_columns = """
+                ALTER TABLE runs ADD COLUMN parent_run_id TEXT REFERENCES runs(id);
+                ALTER TABLE runs ADD COLUMN input_feedback TEXT NOT NULL DEFAULT '';
+                ALTER TABLE runs ADD COLUMN review_feedback TEXT;
+                ALTER TABLE runs ADD COLUMN review_action TEXT;
+                ALTER TABLE runs ADD COLUMN reviewed_at TEXT;
+            """ if version < 2 else ''
+            # Publish base schema, historical migrations, and enterprise tables
+            # atomically so an interrupted upgrade cannot leave a partial version.
+            connection.executescript('BEGIN IMMEDIATE;\n' + SCHEMA + legacy_review_columns
+                                     + ENTERPRISE_SCHEMA + '\nPRAGMA user_version=3;\nCOMMIT;')
 
     def _import_previous_default(self) -> None:
         """Preserve existing local memory when adopting the DecisionMesh name."""

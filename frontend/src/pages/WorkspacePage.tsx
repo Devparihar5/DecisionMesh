@@ -11,6 +11,8 @@ import { memoryApi } from '../services/memory';
 import { ScenarioComposer } from '../components/ScenarioComposer';
 import { useRun } from '../hooks/useRun';
 import { api } from '../services/api';
+import { enterpriseApi } from '../services/enterprise';
+import type { DecisionCase } from '../types/enterprise';
 import type { AgentDefinition, AgentInput, AgentStatus, HealthStatus } from '../types';
 
 export function WorkspacePage({ active = true }: { active?: boolean }) {
@@ -20,6 +22,7 @@ export function WorkspacePage({ active = true }: { active?: boolean }) {
   const [model, setModel] = useState('');
   const [scenario, setScenario] = useState(SCENARIOS[0].scenario);
   const [approval, setApproval] = useState(true);
+  const [enterpriseCase, setEnterpriseCase] = useState<DecisionCase | null>(null);
   const [refreshing, setRefreshing] = useState(false);
   const [catalogBusy, setCatalogBusy] = useState(false);
   const [error, setError] = useState('');
@@ -64,8 +67,24 @@ export function WorkspacePage({ active = true }: { active?: boolean }) {
   const run = useCallback(() => {
     if (!canRun) return;
     setRunSelection([...selected]); setRunApproval(approval); setRunAgents([...agents]);
-    void start({ scenario: scenario.trim(), model, selected_agents: selected, require_approval: approval });
-  }, [canRun, selected, approval, start, scenario, model, agents]);
+    void start({ scenario: scenario.trim(), model, selected_agents: selected, require_approval: approval || !!enterpriseCase?.requires_review,
+      decision_case_id: enterpriseCase?.id });
+  }, [canRun, selected, approval, start, scenario, model, agents, enterpriseCase]);
+
+  useEffect(() => {
+    if (!active) return;
+    const id = new URLSearchParams(window.location.hash.split('?')[1] || '').get('case');
+    if (!id) return;
+    if (busy) { setError('Finish the current workflow before opening another enterprise decision.'); return; }
+    const controller = new AbortController();
+    enterpriseApi.case(id, controller.signal).then((decision) => {
+      if (controller.signal.aborted) return;
+      setEnterpriseCase(decision); setApproval(true);
+      setScenario(`Assess ${decision.state.name} using enterprise decision ${decision.id}, state version ${decision.state_version}. Explain the recommended ${decision.selected_action} action, competing proposals, budget constraints, uncertainties, and next steps. The backend will attach the saved evidence and simulated candidate outcomes.`);
+      window.history.replaceState(null, '', '#/');
+    }).catch((cause) => { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Enterprise context unavailable.'); });
+    return () => controller.abort();
+  }, [active, busy]);
 
   useEffect(() => {
     const onKey = (event: KeyboardEvent) => {
@@ -81,19 +100,25 @@ export function WorkspacePage({ active = true }: { active?: boolean }) {
     if (!active) return;
     const id = new URLSearchParams(window.location.hash.split('?')[1] || '').get('review');
     if (!id) return;
-    if (busy) { setError('Finish or cancel the current workflow before opening another saved review.'); return; }
+    if (busy) {
+      if (review?.run_id === id) {
+        setReviewHidden(false);
+        window.history.replaceState(null, '', '#/');
+      } else setError('Finish or cancel the current workflow before opening another saved review.');
+      return;
+    }
     const controller = new AbortController();
     memoryApi.detail(id, controller.signal).then((saved) => {
       if (controller.signal.aborted) return;
       const checkpoint = [...saved.events].reverse().find((event) => event.type === 'review_required');
       if (saved.status !== 'awaiting_review' || !checkpoint) throw new Error('This run is no longer awaiting review.');
-      setScenario(saved.scenario); setApproval(true); setRunApproval(true); setRunAgents(saved.agents);
+      setScenario(saved.scenario); setApproval(true); setRunApproval(true); setRunAgents(saved.agents); setEnterpriseCase(null);
       setRunSelection(saved.agents.filter((agent) => !agent.core).map((agent) => agent.id));
       restoreReview(checkpoint, saved.events);
       window.history.replaceState(null, '', '#/');
     }).catch((cause) => { if (!controller.signal.aborted) setError(cause instanceof Error ? cause.message : 'Could not load saved review.'); });
     return () => controller.abort();
-  }, [active, busy, restoreReview]);
+  }, [active, busy, restoreReview, review]);
 
   const statuses: Record<string, AgentStatus> = {};
   for (const event of events) {
@@ -128,8 +153,9 @@ export function WorkspacePage({ active = true }: { active?: boolean }) {
       {health && (!health.llm_online || !health.models.length) && <p className="notice">{health.error || 'The model server has no available models. Download or enable a chat model, then refresh.'} <span>Configured endpoint: <code>{health.llm_url}</code></span></p>}
       {health && !health.agno_installed && <p className="notice">The agent runtime is unavailable. Install the backend dependencies with Poetry.</p>}
       {awaitingReview && <div className="review-waiting" role="status"><span>Workflow paused for your review. Add suggestions, rerun analysis, or generate a final brief.</span><button className="secondary-button" onClick={() => setReviewHidden(false)}>Review & continue →</button></div>}
+      {enterpriseCase && <div className="review-waiting"><span>Enterprise evidence attached: {enterpriseCase.state.name} · state v{enterpriseCase.state_version}. {enterpriseCase.requires_review ? 'Policy requires human review.' : 'Advisory synthesis only.'}</span><button className="text-button" disabled={busy} onClick={() => setEnterpriseCase(null)}>Clear evidence link</button></div>}
       <div className="workspace"><aside className="left-column">
-        <ScenarioComposer scenario={scenario} approval={approval} running={running} awaitingReview={awaitingReview} canRun={canRun} onScenario={setScenario} onApproval={setApproval} onRun={run} onCancel={() => { void cancel(); }} />
+        <ScenarioComposer scenario={scenario} approval={approval} running={running} awaitingReview={awaitingReview} canRun={canRun} onScenario={setScenario} onApproval={(value) => setApproval(enterpriseCase?.requires_review ? true : value)} onRun={run} onCancel={() => { void cancel(); }} />
         <AgentRoster agents={awaitingReview && runAgents ? runAgents : agents} selected={awaitingReview && runSelection ? runSelection : selected} statuses={statuses} approval={approval} locked={busy || catalogBusy} onToggle={(id) => setSelected((current) => current.includes(id) ? current.filter((item) => item !== id) : [...current, id])} onAdd={() => setDialog({ agent: null })} onEdit={(agent) => setDialog({ agent })} onRemove={(id) => { void removeAgent(id); }} />
       </aside><section className="right-column" aria-label="Run workspace">
         <OrchestrationGraph agents={runAgents || agents} selected={runSelection || selected} statuses={statuses} approval={runSelection ? runApproval : approval} runStatus={status} elapsedMs={elapsedMs} />

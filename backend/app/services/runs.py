@@ -1,5 +1,6 @@
 """Durable execution, human review, and revision lifecycle."""
 import asyncio
+import json
 from collections.abc import AsyncIterator
 
 from backend.app.agents.factory import agno_available
@@ -12,13 +13,33 @@ from backend.app.schemas.reviews import ReviewInput
 from backend.app.schemas.runs import RunInput
 from backend.app.services.models import ModelService
 from backend.app.storage.runs import RunRepository
+from backend.app.services.enterprise import EnterpriseService
 
 
 class RunService:
-    def __init__(self, registry: AgentRegistry, models: ModelService, coordinator: Coordinator, history: RunRepository):
+    def __init__(self, registry: AgentRegistry, models: ModelService, coordinator: Coordinator, history: RunRepository,
+                 enterprise: EnterpriseService | None = None):
         self.registry, self.models, self.coordinator, self.history = registry, models, coordinator, history
+        self.enterprise = enterprise
 
     async def prepare(self, request: RunInput) -> AsyncIterator[RunEvent]:
+        if request.decision_case_id:
+            if not self.enterprise:
+                raise ApplicationError('Enterprise decision context is unavailable.', 503)
+            case = self.enterprise.repository.case(request.decision_case_id)
+            current = self.enterprise.repository.entity(case.entity_id)
+            if current.version != case.state_version or case.execution_id:
+                raise ApplicationError('This enterprise decision is stale or executed. Open its latest reassessment.', 409)
+            context = {'case_id': case.id, 'state_version': case.state_version, 'state': case.state.state.model_dump(),
+                'source_evidence': case.evidence, 'selected_action': case.selected_action,
+                'candidate_simulations': [item.model_dump() for item in case.candidates],
+                'policy_review_reasons': case.review_reasons,
+                'agent_proposals': [{'agent': item.agent_id, 'action': item.action, 'reason': item.reason[:300]}
+                                    for item in case.rounds[-1].proposals]}
+            scenario = request.scenario + '\n\nNormalized enterprise decision evidence (local simulation only):\n' + json.dumps(context, ensure_ascii=False)
+            if len(scenario) > 6000:
+                raise ApplicationError('Shorten the scenario to leave room for the enterprise evidence snapshot.')
+            request = request.model_copy(update={'scenario': scenario, 'require_approval': request.require_approval or case.requires_review})
         specialists = self.registry.specialists(request.selected_agents)
         oversight, synth = self.registry.get('human_review'), self.registry.get('decision_synth')
         workflow = [*specialists, *([oversight] if request.require_approval else []), synth]
@@ -43,7 +64,8 @@ class RunService:
         # Resolve first: an unavailable server leaves the review safely pending.
         model = await self.models.resolve(saved.model)
         request = RunInput(scenario=saved.scenario, model=model,
-                           selected_agents=[agent.id for agent in saved.agents if not agent.core], require_approval=True)
+                           selected_agents=[agent.id for agent in saved.agents if not agent.core], require_approval=True,
+                           decision_case_id=next((event.decision_case_id for event in saved.events if event.type == 'start'), None))
         guidance = '\n\n'.join(value for value in [saved.input_feedback, decision.feedback] if value)[-4000:]
         target_id, submitted = self.history.accept_review(run_id, decision, request, saved.agents, guidance)
         if decision.action == 'rerun':

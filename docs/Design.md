@@ -51,3 +51,15 @@ Analytics uses metric cards, an inspectable daily activity chart, and a sortable
 ## Brand
 
 Use **DecisionMesh** as the visible product name and **Multi-agent decision intelligence** as its descriptor. Use `decisionmesh` for package/file identifiers and `decisionmesh-frontend` for the npm package. Preserve domain terms such as Orchestrator and Live orchestration. The README's animated preview must show the real UI component and label illustrative replay data clearly.
+
+## Scenario starters and review dialog
+
+The composer offers six compact scenario buttons above the editable text area. Indicate the active preset, permit custom edits, and lock the scenario/team during generation or pending review. The review modal summarizes agent findings and asks for suggestions. Primary action: Generate final brief. Secondary action: Revise & rerun agents (guidance required). Review later dismisses the modal while keeping a visible resume banner; cancel closes the pending run. Pending history entries link back to the workspace checkpoint. Expose submitting, retryable provider error, awaiting-review, and revised states. Stack actions on small screens and preserve native dialog focus/keyboard behavior.
+
+## Enterprise lab and research
+
+Add navigation entries for Enterprise lab and Research, with horizontally scrollable navigation on narrow screens. Reuse dark surfaces, blue primary controls, green acknowledgments, amber policy/conflict notices, and existing typography. Domain-specific styles live in `frontend/src/styles/enterprise.css`.
+
+Enterprise lab follows the decision loop in numbered panels: ingestion, proposal exchange/arbitration, candidate twin comparison/approval, outcome feedback, and event ledger. Distinguish rule-based seed proposals from actual Agno rounds. Show source IDs, state versions, stale decisions, policy blocks, and simulation assumptions in plain language. Candidate selection is separate from approval; execution names the approved action explicitly. Reviewer attribution must not imply authenticated authority. Acknowledgments say simulated.
+
+Research separates benchmark configuration, saved results, and interpretation. Display paired architecture summaries, quality bars, comparable trial tables, provider/format failures, live job state, cancellation, and JSON export. Label the simulator-based oracle and unequal call counts. Preserve completed partial trials after cancellation/interruption. Tables scroll within panels on small screens; forms and proposal cards stack.

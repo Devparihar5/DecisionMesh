@@ -8,7 +8,7 @@ from fastapi.responses import JSONResponse
 
 from backend.app.agents.factory import AgnoRunner
 from backend.app.agents.registry import AgentRegistry
-from backend.app.api import agents, analytics, health, history, runs
+from backend.app.api import agents, analytics, enterprise, health, history, research, runs
 from backend.app.core.config import Settings
 from backend.app.core.errors import ApplicationError
 from backend.app.orchestration.coordinator import Coordinator
@@ -17,6 +17,9 @@ from backend.app.services.analytics import AnalyticsService
 from backend.app.storage.agents import AgentRepository
 from backend.app.storage.database import Database
 from backend.app.storage.runs import RunRepository
+from backend.app.storage.enterprise import EnterpriseRepository
+from backend.app.services.enterprise import EnterpriseService
+from backend.app.services.research_jobs import ResearchJobs
 
 
 def create_app(settings: Settings | None = None) -> FastAPI:
@@ -31,8 +34,16 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             app.state.analytics = AnalyticsService(database)
             app.state.registry = AgentRegistry(AgentRepository(database))
             app.state.models = ModelService(settings, client)
-            app.state.coordinator = Coordinator(AgnoRunner(settings))
-            yield
+            runner = AgnoRunner(settings)
+            app.state.coordinator = Coordinator(runner)
+            repository = EnterpriseRepository(database)
+            repository.recover_jobs()
+            app.state.enterprise = EnterpriseService(repository)
+            app.state.research_jobs = ResearchJobs(repository, app.state.models, app.state.registry, runner)
+            try:
+                yield
+            finally:
+                await app.state.research_jobs.shutdown()
 
     app = FastAPI(title="DecisionMesh API", version="0.2.0", lifespan=lifespan)
     app.add_middleware(CORSMiddleware, allow_origins=[settings.frontend_origin],
@@ -47,6 +58,8 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     app.include_router(runs.router)
     app.include_router(history.router)
     app.include_router(analytics.router)
+    app.include_router(enterprise.router)
+    app.include_router(research.router)
     return app
 
 

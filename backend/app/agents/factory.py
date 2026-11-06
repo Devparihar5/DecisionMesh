@@ -24,6 +24,12 @@ class AgnoRunner:
         self._slots = asyncio.Semaphore(1)
 
     async def run(self, config: AgentDefinition, model_id: str, prompt: str) -> str:
+        return await self._execute(config, model_id, prompt, structured=False)
+
+    async def propose(self, config: AgentDefinition, model_id: str, prompt: str) -> str:
+        return await self._execute(config, model_id, prompt, structured=True)
+
+    async def _execute(self, config: AgentDefinition, model_id: str, prompt: str, structured: bool) -> str:
         if not agno_available():
             raise RuntimeError("Agno is missing. Run poetry install.")
 
@@ -47,9 +53,14 @@ class AgnoRunner:
                 model=model,
                 instructions=[
                     config.instructions,
-                    "Return a concise assessment (at most 180 words). Use only supplied facts; label assumptions. Do not claim to execute actions.",
+                    ("Return ONLY one valid JSON object with exactly three keys: action, reason, evidence. "
+                     "action must be hold, overtime, backup, or defer. reason must be a brief plain sentence of at most 40 words. "
+                     "evidence must be an array of the supplied short references such as E1 or E2. "
+                     "Do not invent references, add keys, use code fences, or add text outside JSON. Do not execute actions."
+                     if structured else
+                     "Return a concise assessment (at most 180 words). Use only supplied facts; label assumptions. Do not claim to execute actions."),
                 ],
-                markdown=True,
+                markdown=not structured,
                 telemetry=False,
             )
             result = await asyncio.wait_for(

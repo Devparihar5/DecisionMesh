@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 
-export type Page = 'workspace' | 'history' | 'analytics';
+export type Page = 'workspace' | 'history' | 'analytics' | 'enterprise' | 'research';
 
 function page(): Page {
   const hash = window.location.hash;
   if (hash.startsWith('#/history')) return 'history';
   if (hash.startsWith('#/analytics')) return 'analytics';
+  if (hash.startsWith('#/enterprise')) return 'enterprise';
+  if (hash.startsWith('#/research')) return 'research';
   return 'workspace';
 }
 
