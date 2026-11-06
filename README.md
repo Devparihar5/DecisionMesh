@@ -115,19 +115,8 @@ External producers can POST `/api/enterprise/events` independently of the UI. A 
 
 ## Architecture
 
-```mermaid
-flowchart LR
-    UI[React workspace] --> API[FastAPI]
-    API --> RUN[Durable run service]
-    RUN --> ORCH[Orchestrator]
-    ORCH --> AGENTS[Agno specialist agents]
-    AGENTS --> LLM[Configured model server]
-    ORCH --> REVIEW[Human oversight]
-    REVIEW --> BRIEF[Decision brief]
-    RUN --> DB[(Local SQLite memory)]
-    API --> HISTORY[Run history and analytics]
-    HISTORY --> DB
-```
+![DecisionMesh architecture: React connects to FastAPI, durable runs coordinate Agno agents and human review, and SQLite preserves run history.](docs/assets/decisionmesh-architecture.svg)
+
 
 Specialists run sequentially to respect local model capacity. With human review enabled, synthesis waits for an explicit operator choice and incorporates submitted suggestions. They share a scenario; oversight reviews their findings; synthesis receives the findings, oversight assessment, and missing perspectives. A failed specialist marks the result as partial. A failed synthesis cannot report workflow success.
 

@@ -1,0 +1,60 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1240" height="710" viewBox="0 0 1240 710" role="img" aria-labelledby="title description">
+  <title id="title">DecisionMesh architecture</title>
+  <desc id="description">React calls FastAPI. Durable runs coordinate Agno specialists, a configured model server, human oversight, and a final decision brief. SQLite stores durable runs and supports history and analytics.</desc>
+  <defs>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 Z" fill="#8badd9"/>
+    </marker>
+  </defs>
+  <rect width="1240" height="710" rx="20" fill="#0c1119"/>
+  <g font-family="Arial, Helvetica, sans-serif">
+    <text x="40" y="46" fill="#f3f5fa" font-size="25" font-weight="700">DecisionMesh</text>
+    <text x="1200" y="44" text-anchor="end" fill="#a8b6ca" font-size="15">Core decision workflow</text>
+
+    <g fill="none" stroke="#8badd9" stroke-width="2" marker-end="url(#arrow)">
+      <path d="M240 290 H280"/>
+      <path d="M480 290 H520"/>
+      <path d="M720 290 H760"/>
+      <path d="M960 290 H1000"/>
+      <path d="M380 250 V165"/>
+      <path d="M480 125 H520"/>
+      <path d="M620 250 V165"/>
+      <path d="M1100 330 V425"/>
+      <path d="M860 330 V425"/>
+      <path d="M860 505 V580"/>
+    </g>
+
+    <g fill="#151f2e" stroke="#344863" stroke-width="1.5">
+      <rect x="40" y="250" width="200" height="80" rx="12"/>
+      <rect x="280" y="250" width="200" height="80" rx="12"/>
+      <rect x="520" y="250" width="200" height="80" rx="12"/>
+      <rect x="760" y="250" width="200" height="80" rx="12" stroke="#82b1ff"/>
+      <rect x="1000" y="250" width="200" height="80" rx="12"/>
+      <rect x="280" y="85" width="200" height="80" rx="12"/>
+      <rect x="520" y="85" width="200" height="80" rx="12"/>
+      <rect x="1000" y="425" width="200" height="80" rx="12"/>
+      <rect x="760" y="425" width="200" height="80" rx="12"/>
+      <rect x="760" y="580" width="200" height="80" rx="12" fill="#12302e" stroke="#64d7be"/>
+    </g>
+
+    <g fill="#f3f5fa" font-size="18" text-anchor="middle">
+      <text x="140" y="297">React workspace</text>
+      <text x="380" y="297">FastAPI</text>
+      <text x="620" y="297">Durable run service</text>
+      <text x="860" y="297">Orchestrator</text>
+      <text x="1100" y="283"><tspan x="1100">Agno specialist</tspan><tspan x="1100" dy="24">agents</tspan></text>
+      <text x="380" y="118"><tspan x="380">Run history</tspan><tspan x="380" dy="24">and analytics</tspan></text>
+      <text x="620" y="118"><tspan x="620">Local SQLite</tspan><tspan x="620" dy="24">memory</tspan></text>
+      <text x="1100" y="458"><tspan x="1100">Configured</tspan><tspan x="1100" dy="24">model server</tspan></text>
+      <text x="860" y="458"><tspan x="860">Human oversight</tspan><tspan x="860" dy="24" fill="#a8b6ca" font-size="14">when review is enabled</tspan></text>
+      <text x="860" y="627" fill="#a0efdc">Decision brief</text>
+    </g>
+    <g fill="#a8b6ca" font-size="14">
+      <text x="635" y="211">Persist events</text>
+      <text x="1115" y="382">Model calls</text>
+      <text x="875" y="551">Synthesis</text>
+      <text x="40" y="620">HTTP requests and SSE progress connect the UI and API.</text>
+      <text x="40" y="647">Run history and review checkpoints remain on the local machine.</text>
+    </g>
+  </g>
+</svg>

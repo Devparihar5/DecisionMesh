@@ -97,6 +97,7 @@ The following results are historical, from before the enterprise extension:
 - [x] Rename default storage to `decisionmesh.sqlite3` with a data-preserving legacy import and migration regression checks.
 - [x] Record an illustrative seven-agent workflow from the actual React panel and save the looping GIF in `docs/assets/`.
 - [x] Embed the GIF in a rewritten README covering features, setup, architecture, memory, analytics, and configuration.
+- [x] Replace the failing README architecture rich display with a standalone SVG image and retain editable diagram source.
 - [x] Inspect start, intermediate, and completion GIF frames; validate browser execution without JavaScript errors.
 
 ## Provider-neutral configuration

@@ -80,3 +80,7 @@ The reusable multi-entity live pass also exposed a late default-selection effect
 Regression suite now has 50 backend tests plus 5 frontend protocol/format tests; the production build passes. Added Playwright and a reusable live UI script (`npm --prefix frontend run test:live`). QA records are retained; local reports/screenshots are under the ignored `data/ui-tests/` directory. The first measured six-case comparison scored centralized 50.00 and orchestrated 95.44 under the synthetic rubric, with 6 versus 45 model calls and recorded provider failures. This is one small, unequal-compute, policy-confounded local comparison; do not present it as general enterprise performance evidence.
 
 The saved live suite subsequently passed 14 core checks end to end after the selection fix; a separate stress pass checked 12 immediate multi-entity navigation switches. Its second full benchmark scored centralized 50.00 and orchestrated 73.68 with 6 versus 38 calls. Both completed benchmarks contain 12 trials (24 total); cancellation/review recovery were verified separately. The between-run quality variation is material and must accompany any discussion of these local results.
+
+## README architecture rendering — 2026-11-06
+
+Replaced the README's embedded Mermaid block with `docs/assets/decisionmesh-architecture.svg` after the rich display failed to render. The diagram is a standalone image with no external resources; its editable Mermaid source is saved alongside it. Keep the image and source aligned when changing the core workflow.

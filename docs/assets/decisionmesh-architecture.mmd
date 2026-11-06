@@ -1,0 +1,11 @@
+flowchart LR
+    UI[React workspace] --> API[FastAPI]
+    API --> RUN[Durable run service]
+    RUN --> ORCH[Orchestrator]
+    ORCH --> AGENTS[Agno specialist agents]
+    AGENTS --> LLM[Configured model server]
+    ORCH --> REVIEW[Human oversight]
+    REVIEW --> BRIEF[Decision brief]
+    RUN --> DB[(Local SQLite memory)]
+    API --> HISTORY[Run history and analytics]
+    HISTORY --> DB
